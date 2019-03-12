@@ -155,4 +155,28 @@
 			<ymax>312</ymax>
 		</bndbox>
 	</object>
+	<object>
+		<name>asarp_marker</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>526</xmin>
+			<ymin>132</ymin>
+			<xmax>539</xmax>
+			<ymax>145</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>asarp_marker</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>569</xmin>
+			<ymin>165</ymin>
+			<xmax>582</xmax>
+			<ymax>174</ymax>
+		</bndbox>
+	</object>
 </annotation>

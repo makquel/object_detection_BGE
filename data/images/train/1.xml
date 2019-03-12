@@ -143,4 +143,16 @@
 			<ymax>378</ymax>
 		</bndbox>
 	</object>
+	<object>
+		<name>asarp_marker</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>603</xmin>
+			<ymin>223</ymin>
+			<xmax>619</xmax>
+			<ymax>243</ymax>
+		</bndbox>
+	</object>
 </annotation>
