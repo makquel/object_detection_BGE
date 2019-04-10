@@ -1,20 +1,11 @@
-######## Video Object Detection Using Tensorflow-trained Classifier #########
+# Object detection using CNN based classifier versão 1.0
 #
-# Author: Evan Juras
-# Date: 1/16/18
-# Description: 
-# This program uses a TensorFlow-trained classifier to perform object detection.
-# It loads the classifier uses it to perform object detection on a video.
-# It draws boxes and scores around the objects of interest in each frame
-# of the video.
-
-## Some of the code is copied from Google's example at
-## https://github.com/tensorflow/models/blob/master/research/object_detection/object_detection_tutorial.ipynb
-
-## and some is copied from Dat Tran's example at
-## https://github.com/datitran/object_detector_app/blob/master/object_detection_app.py
-
-## but I changed it to make it more understandable to me.
+# -----------------------------------
+# Author: Miguel Rueda
+# Date: 10/04/19
+# Description: Este script utiliza um classificador treinado em tensorflow para detectar marcadores do tipo ASARP
+# utéis na detecção de movimento muscular durante a cirugia do Pena. Dada a instabilidade na detecção, o classificador possui
+# um estimador probabilistico usando filtro de Kalman. 
 
 # Import packages
 import os
@@ -98,7 +89,8 @@ video = cv2.VideoCapture(PATH_TO_VIDEO)
 length = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
 fps = video.get(cv2.CAP_PROP_FPS)
 # KF sampling rate
-T = 1./fps
+# T = 1./fps
+T = 1
 print ("[INFO] Video rate: {:2f} fps".format(fps))
 print ("[INFO] Video length: {} frames".format(length))
 
@@ -135,19 +127,23 @@ u = .005 #define acceleration magnitude
 """
 Covariance matrices
 """
-Sigma_v = .1; #process noise: the variability in how fast the Hexbug is speeding up (stdv of acceleration: meters/sec^2)
+Sigma_v = .05; #process noise: the variability in how fast the ASARP_marker is speeding up (stdv of acceleration: meters/sec^2)
 tkn_x = 1;  #measurement noise in the horizontal direction (x axis).
 tkn_y = 1;  #measurement noise in the horizontal direction (y axis).
 Ez = np.matrix(((tkn_x,0),(0,tkn_y)))*.5**2 
 Ex = np.matrix( ((T**4/4,0,T**3/2,0),(0,T**4/4,0,T**3/2),(T**3/2,0,T**2,0),(0,T**3/2,0,T**2)) )*Sigma_v**2# Ex convert the process noise (stdv) into covariance matrix
-P = Ex; # estimate of initial Hexbug position variance (covariance matrix)
+P = [Ex]*14; # estimate of initial position variance (covariance matrix)
 
 
 bboxes_i = []
 bboxes_i_1 = []
+
 # https://stackoverflow.com/questions/10617045/how-to-create-a-fix-size-list-in-python
 # bboxes_swap = [xmin, ymin, xmax, ymax]
 bboxes_swap = [[0.0 , 0.0, 0.0, 0.0]]*14
+bboxes_hat = [np.matrix( (0., 0., 0., 0.) ).transpose()]*14
+K = [[0.]]*14
+
 swap_flag = [False]*14
 frame_cnt = 0
 '''
@@ -227,24 +223,23 @@ while(video.isOpened()):
                 # print("[DEBUG] Index counter:{}".format(n))
             # if min_flag:
             if (min_flag and (swap_flag[min_index]==False)):
-                if (min_index==0):                
-                    # Predict next state of the asarp_marker with the last state and predicted motion.
-                    x_hat = F*x_hat + G*u;
-                    # predic_state = [predic_state; x_hat(1)] ;
-                    # predict next covariance
-                    P = F*P*F.T + Ex;
-                    # predic_var = [predic_var; P] ;
-                    # predicted measurement covariance
-                    # Kalman Gain
-                    K = P*H.T*linalg.inv(H*P*H.T + Ez);
-                    # Update the state estimate
-                    z = np.matrix( (x_avg_q, y_avg_q) ).transpose()
-                    writer.writerow([x_avg_q,y_avg_q])
-                    x_hat = x_hat + K*(z - H*x_hat);
-                    print("predicted state for bboxes[0]: {}" .format(x_hat))
-                    # update covariance estimation.
-                    P = (np.identity(4) - K*H)*P;
-                
+                # if (min_index==1):                
+                #     # Predict next state of the asarp_marker with the last state and predicted motion.
+                #     x_hat = F*x_hat + G*u;
+                #     # predic_state = [predic_state; x_hat(1)] ;
+                #     # predict next covariance
+                #     P = F*P*F.T + Ex;
+                #     # predic_var = [predic_var; P] ;
+                #     # predicted measurement covariance
+                #     # Kalman Gain
+                #     K = P*H.T*linalg.inv(H*P*H.T + Ez);
+                #     # Update the state estimate
+                #     z = np.matrix( (x_avg_q, y_avg_q) ).transpose()
+                #     writer.writerow([x_avg_q,y_avg_q])
+                #     x_hat = x_hat + K*(z - H*x_hat);
+                #     print("predicted state for bboxes[0]: {}" .format(x_hat))
+                #     # update covariance estimation.
+                #     P = (np.identity(4) - K*H)*P;
                 #inserir a lista bboxes_swap na posição [m] (mantendo a posição original )
                 # bboxes_swap.append(bboxes_i[min_index])
                 swap_flag[min_index] = True
@@ -258,19 +253,55 @@ while(video.isOpened()):
             swap_flag[swp_i] = False                
     else:
         #na iteração i=0 bboxes_swap pode ser uma copia do bboxes_i ou seja bboxes_i_!
-        ymin_dot = bboxes_i[0][0]*height
-        xmin_dot = bboxes_i[0][1]*width
-        ymax_dot = bboxes_i[0][2]*height
-        xmax_dot = bboxes_i[0][3]*width 
+        ymin_dot = bboxes_i[5][0]*height
+        xmin_dot = bboxes_i[5][1]*width
+        ymax_dot = bboxes_i[5][2]*height
+        xmax_dot = bboxes_i[5][3]*width 
         x_dot_avg = int(xmin_dot + (xmax_dot-xmin_dot)/2)
         y_dot_avg = int(ymin_dot + (ymax_dot-ymin_dot)/2)
         x_hat = np.matrix( (x_dot_avg, y_dot_avg, 0, 0) ).transpose()
         # bboxes_swap = bboxes_i
         for idx in range(len(bboxes_i[:])):
+            ymin_dot = bboxes_i[idx][0]*height
+            xmin_dot = bboxes_i[idx][1]*width
+            ymax_dot = bboxes_i[idx][2]*height
+            xmax_dot = bboxes_i[idx][3]*width 
+            x_dot_avg = int(xmin_dot + (xmax_dot-xmin_dot)/2)
+            y_dot_avg = int(ymin_dot + (ymax_dot-ymin_dot)/2)
             print("index_cnt: {}".format(idx))
             bboxes_swap[idx] = bboxes_i[idx]
+            #initial value for estimation scheme 
+            bboxes_hat[idx][0] = x_dot_avg
+            bboxes_hat[idx][1] = y_dot_avg
 
-
+    if (frame_cnt > 0):
+        for k in range(len(bboxes_swap[:])):
+            ymin_k = bboxes_swap[k][0]*height
+            xmin_k = bboxes_swap[k][1]*width
+            ymax_k = bboxes_swap[k][2]*height
+            xmax_k = bboxes_swap[k][3]*width 
+            x_avg_k = int(xmin_k + (xmax_k-xmin_k)/2)
+            y_avg_k = int(ymin_k + (ymax_k-ymin_k)/2)
+            # Predict next state of the asarp_marker with the last state and predicted motion.
+            # x_hat = F*x_hat + G*u;
+            bboxes_hat[k] = F*bboxes_hat[k] + G*u;
+            # predic_state = [predic_state; x_hat(1)] ;
+            # predict next covariance
+            # P = F*P*F.T + Ex;
+            P[k] = F*P[k]*F.T + Ex;
+            # predic_var = [predic_var; P] ;
+            # predicted measurement covariance
+            # Kalman Gain
+            # K = P*H.T*linalg.inv(H*P*H.T + Ez);
+            K[k] = P[k]*H.T*linalg.inv(H*P[k]*H.T + Ez);
+            # Update the state estimate
+            z = np.matrix( (x_avg_k, y_avg_k) ).transpose()
+            writer.writerow([x_avg_k,y_avg_k])
+            # x_hat = x_hat + K*(z - H*x_hat);
+            bboxes_hat[k] = bboxes_hat[k] + K[k]*(z - H*bboxes_hat[k]);
+            print("[DEBUG] predicted state for bboxes[0]: {}" .format(x_hat))
+            # update covariance estimation.
+            P[k] = (np.identity(4) - K[k]*H)*P[k];
 
 
     # print("Swap vector size: {} ".format(len(bboxes_swap[:])))
@@ -289,7 +320,7 @@ while(video.isOpened()):
     #     y_avg = int(ymin + (ymax-ymin)/2)
     #     rad_avg = math.sqrt(((xmax-xmin)/2)**2 + ((ymax-ymin)/2)**2)
     #     cv2.circle(frame, (x_avg, y_avg), int(rad_avg), colors['navy'], thickness=2, lineType=8, shift=0)
-    cv2.circle(frame, (x_hat[0], x_hat[1]), int(30), colors['red'], thickness=2, lineType=8, shift=0)    
+    # cv2.circle(frame, (bboxes_hat[5][0], bboxes_hat[5][1]), int(30), colors['green'], thickness=2, lineType=8, shift=0) <----   
     ## boxes[0][i] i-th box
     ## print(boxes[0][1])
     # https://stackoverflow.com/questions/3294889/iterating-over-dictionaries-using-for-loops
@@ -303,9 +334,11 @@ while(video.isOpened()):
         y_avg = int(ymin + (ymax-ymin)/2)
         rad_avg = math.sqrt(((xmax-xmin)/2)**2 + ((ymax-ymin)/2)**2)
         # print(x_avg, y_avg,rad_avg)
-        cv2.circle(frame, (x_avg, y_avg), int(rad_avg), colors[color_key[j]], thickness=2, lineType=8, shift=0)
+        # cv2.circle(frame, (x_avg, y_avg), int(rad_avg), colors[color_key[j]], thickness=2, lineType=8, shift=0)
+        cv2.circle(frame, (x_avg, y_avg), int(rad_avg), colors['red'], thickness=2, lineType=8, shift=0)
         cv2.putText(frame,str(j),((x_avg-5),(y_avg+5)), cv2.FONT_HERSHEY_SIMPLEX, 0.5,colors[color_key[j]],2,cv2.LINE_AA)
 
+        cv2.circle(frame, (bboxes_hat[j][0], bboxes_hat[j][1]), int(30), colors['green'], thickness=2, lineType=8, shift=0)  
         # All the results have been drawn on the frame, so it's time to display it.
     cv2.imshow('Object detector', frame)
     # cv2.waitKey(1000)
