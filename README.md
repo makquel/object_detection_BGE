@@ -3,7 +3,6 @@ A  anorretoplastia sagital posterior (PSARP-Posterior sagittal anorectoplasty) �
 
 O objetivo principal a modernização do estimulador muscular EM901 (estimulador desenvolvido pela BGE). Isto compreende a utilização de técnicas de visão computacional visando assistir o cirurgião durante as fases de estimulação muscular no decorrer do procedimento. Diversos algoritmos de visão computacional foram testados para auxiliar na fase da indentificação muscular, no entanto a solução mais robusta está baseada na utilização de Redes neurais convolucionais para a identifação de marcadores sinteticos na pele.
 
-![alt text](https://github.com/makquel/object_detection_BGE/blob/master/sandbox/results/bbosex_filtered.png)
 [![YouTube](https://github.com/makquel/object_detection_BGE/blob/master/sandbox/results/bbosex_filtered.png)](https://www.youtube.com/watch?v=Nnkn2jTRf_I&feature=youtu.be)
 
 ## Getting Started ##
