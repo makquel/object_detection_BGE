@@ -20,3 +20,9 @@ python main.py
 ### Installing
 
 
+### Sandbox 
+
+#### Fluxo óptico
+```
+jupyter nbconvert --to notebook --execute mynotebook.ipynb --output fluxo_optico.ipynb
+```
