@@ -14,8 +14,14 @@ Os scripts foram testados no Ubuntu 18.04
 * OpenCV 3.2.0
 * Tensoflow 1.12.0
 
+### Treinando a CNN para reconhecimento de marcadores sinteticos
+Faça um cópia do jupyter notebook tensorflow_object_detection_training_colab.ipynb no seu google Drive para treinamento no Colab.
+Assim que atingir os críterios de parada do treinamento, exporte o modelo de inferência (Frozen network)
+Chame o modelo de inferência no script ASARP e execute-o utilizando como entrada um vídeo do procedimento
 
-
+```
+python ASARP_detection_KF.py --video ./video/bge_teste.avi
+```
 ### Sandbox ###
 Antes de chegar numa solução parcial ao problema de identificação do movimento muscular através de marcadores sinteticos, foram aboardados outros algoritmos baseados em técnicas de visão computacional. A pasta sandbox contém os scripts implementados para tal.
 
