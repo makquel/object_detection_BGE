@@ -7,22 +7,38 @@ O objetivo principal a modernização do estimulador muscular EM901 (estimulador
 
 
 ## Getting Started ##
+Os scripts foram testados no Ubuntu 18.04
+
+### Pré-requisito
+* pyhton 3.x
+* OpenCV 3.2.0
+* Tensoflow 1.12.0
 
 
-### Prerequisites
 
+### Sandbox ###
+Antes de chegar numa solução parcial ao problema de identificação do movimento muscular através de marcadores sinteticos, foram aboardados outros algoritmos baseados em técnicas de visão computacional. A pasta sandbox contém os scripts implementados para tal.
 
-
-```
-python main.py
-```
-
-### Installing
-
-
-### Sandbox 
+#### Amplifição de vídeo Euleriana
+O resultado do algoritmo [here](https://lambda.qrilab.com/site/tag/tag-science/#show-results)
 
 #### Fluxo óptico
 ```
 jupyter nbconvert --to notebook --execute mynotebook.ipynb --output fluxo_optico.ipynb
 ```
+#### Estimação de Homografia
+```
+jupyter nbconvert --to notebook --execute mynotebook.ipynb --output Homografy_Trans.ipynb
+```
+#### Segmentação no espaço de cor
+```
+jupyter nbconvert --to notebook --execute mynotebook.ipynb --output Hcolor_space.ipynb
+```
+#### Utilidades
+```
+jupyter nbconvert --to notebook --execute mynotebook.ipynb --output bge_utilities.ipynb
+```
+
+
+
+
